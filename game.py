@@ -9,14 +9,9 @@ import numpy as np
 from game_Class import *
 
 
-listTriggers = ["OnDraw", "OnLaying", "OnCharacterAttack", "OnGodAttack", "OnCreatureAttack", "Onkill", "OnUse",
-                "OnDefense", "OnDying", "OnEnemyDamagedBySelf"]
-listEvents = ["OnTricksUse", "OnSpellUse", "OnStartTurn", "OnEndTurn", "OnPowerUse", "OnRelicUse", "OnFriendDefense", "OnFriendDamaged"
-              "OnFriendAttack", "OnFriendDies", "OnEnemyDied", "OnEnemyAttack"]
-
-listTypeEffect = ["Ability", "Afterlife", "Backline", "Blessed", "Blitz", "Burn", "Confused", "Deadly", "Flank",
-                  "Frontline", "Godblitz", "Hidden", "Leech", "Overkill", "Obliterate", "Protected", "Regen",
-                  "Roar", "Sleep", "Souless", "Summon", "Twin strike", "Ward"]
+listTriggers = ["OnDraw", "OnLaying", "OnCharacterAttack", "OnGodAttack", "OnCreatureAttack", "Onkill", "OnUse", "OnDefense", "OnDying", "OnEnemyDamagedBySelf"]
+listEvents = ["OnTricksUse", "OnSpellUse", "OnStartTurn", "OnEndTurn", "OnPowerUse", "OnRelicUse", "OnFriendDefense", "OnFriendDamaged", "OnFriendAttack", "OnFriendDies", "OnEnemyDied", "OnEnemyAttack"]
+listTypeEffect = ["Ability", "Afterlife", "Backline", "Blessed", "Blitz", "Burn", "Confused", "Deadly", "Flank", "Frontline", "Godblitz", "Hidden", "Leech", "Overkill", "Obliterate", "Protected", "Regen", "Roar", "Sleep", "Souless", "Summon", "Twin strike", "Ward"]
 
 
 def sortPlayers(player0, player1):
@@ -80,12 +75,10 @@ def ModifyStats(card, strength, healthMax, damageTaken=0, opponent=False, specif
     if opponent:
         player = player0 if player == player1 else player1
     if specifyCard == None:
-        print("Entrer le numero de la carte")
-        numCard = int(input())
-        try:
-            modifiedCard = player.Board[numCard]
-        except:
-            print("Carte non trouvée")
+        numCard = -1
+        while numCard < 0 or numCard >= len(player.Board):
+            print("Entrer le numero de la carte")
+            numCard = int(input())
     else:
         modifiedCard = specifyCard
     try:
@@ -104,20 +97,19 @@ def Blitz(card):
 
 def GetConfused(card, toSelf=True, opponent=False, specifyCard=None):
     if toSelf:
-        card.Confused = True
-        print(f"La carte {card.Name} devient confused")
+        specifyCard = card
     else:
         player = card.Belonging
         if opponent:
             player = player0 if player == player1 else player1
         if specifyCard == None:
-            print("Entrer le numero de la carte")
-            numCard = int(input())
-            player.Board[numCard].Confused = True
-            print(f"La carte {player.Board[numCard].Name} devient confused")
-        else:
-            specifyCard.Confused = True
-            print(f"La carte {specifyCard.Name} devient confused")
+            numCard = -1
+            while numCard < 0 or numCard >= len(player.Board):
+                print("Entrer le numero de la carte")
+                numCard = int(input())
+            specifyCard = player.Board[numCard]
+    specifyCard.Confused = True
+    print(f"La carte {specifyCard.Name} devient confused")
 
 def Overkill(card):
     pass
@@ -130,14 +122,14 @@ if __name__ == '__main__':
     ToAddInDeck = Card(1, "ToAddInDeck", 0, 1, 1, {})
     Impling = Card(1, "Impling", 0, 1, 1, {})
     carte1 = Card(1, "1", 1, 2, 2, {"OnEndTurn": lambda self: Frontline(self), "OnDying": lambda self: Frontline(self)}, property=["Frontline"])
-    carte2 = Card(1, "2", 1, 1, 3, {"OnLaying": lambda self: ModifyStats(self, 0, -1, opponent=True)})
+    carte2 = Card(1, "2", 1, 1, 3, {"OnLaying": lambda self: ModifyStats(self, 0, 0, -1, opponent=True)})
     carte3 = Card(1, "3", 1, 3, 3, {"OnEndTurn": lambda self: Frontline(self), "OnDying": lambda self: Frontline(self)}, property=["Frontline"]) # verif le OnDying de la frontline
     carte4 = Card(1, "4", 1, 2, 4, {"OnEndTurn": lambda self: Backline(self), "OnFriendDies": lambda self: Backline(self)}, property=["Backline"])
     carte5 = Card(1, "5", 1, 3, 1, {"OnDying": lambda self: Summon(self, Impling)}, property=["Afterlife"]) # TODO pblm si l'ennemie detruit la carte, summon regarde en fonction de turn qui est a faux
     carte6 = Card(1, "6", 1, 3, 4, {"OnLaying": lambda self: ModifyStats(self, 1, 1)})
     carte7 = Card(1, "7", 1, 4, 4, {"OnLaying": lambda self: Blitz(self)}, property=["Blitz"])
     carte8 = Card(1, "8", 1, 4, 5, {"OnLaying": lambda self: AddInDeck(self, ToAddInDeck)}, property=["Roar"])
-    carte9 = Card(1, "9", 1, 1, 4, {"OnEnemyDamagedBySelf": lambda self, opponentCard: ModifyStats(self, -1, 0, opponent=True, specifyCard=opponentCard)})
+    carte9 = Card(1, "9", 1, 1, 4, {"OnEnemyDamagedBySelf": lambda self, opponentCard: ModifyStats(self, -1, 0, 0, opponent=True, specifyCard=opponentCard)})
     carte10 = Card(1, "10", 1, 6, 6, {"OnLaying": lambda self: GetConfused(self)}, property=["Confused"])
     pub0 = Publisher(listEvents)
     pub1 = Publisher(listEvents)
@@ -149,21 +141,23 @@ if __name__ == '__main__':
     game.Start(player0, player1)
 
 
-    # player0.LayCard(1)
-    # player1.LayCard(0) # TODO demander les numplayer et num card en unput dans les fonction !!!!!!!!!!!!!!!!!!!!!
-    # player1.LayCard(3, player0, 0)
-    #
-    # player0.EndTurn(player1, game)
-    # player1.EndTurn(player0, game)
-    #
-    # player0.AttackCard(player1, 0, 0)
-    # player1.AttackCard(player0, 0, 0)
-    #
-    # player0.ShowPlayer()
-    # player1.ShowPlayer()
-    #
-    # player0.UseTricks()
-    # player1.UseTricks()
+
+    player0.ShowPlayer()
+    player1.ShowPlayer()
+
+    player0.UseTricks(game)
+    player1.UseTricks(game)
+
+    player0.LayCard(0)
+    player1.LayCard(0)
+
+    player0.AttackCard(player1, 0, 0)
+    player1.AttackCard(player0, 0, 0)
+
+    player0.EndTurn(player1, game)
+    player1.EndTurn(player0, game)
+
+    game.Turn
 
 
 
