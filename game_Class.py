@@ -29,11 +29,14 @@ class Publisher: # on créer un publisher par player
 def Death(player0, player1):
     for player in [player0, player1]:
         for numCard, card in enumerate(player.Board):
-            if card.HealthMax <= card.DammageTaken:
+            if card.HealthMax <= card.DamageTaken:
                 print(f'La carte {card.Name} du joueur {player.NumPlayer} est détruite.')
                 card.OnBoard = False
-                card.InVoid = True  # TODO if obliterated
-                player.Void.append(player.Board.pop(numCard))
+                if card.Obliterated:
+                    player.Board = [x for x in player.Board if x != card]
+                else:
+                    card.InVoid = True
+                    player.Void.append(player.Board.pop(numCard))
                 for event in card.Effects:
                     if event in listEvents: # Les effet peuvent etre des triggers et non des event
                         player.Pub.unregister(event, card)
@@ -51,17 +54,16 @@ def GetDamaged(cardDamaged, Amount):
     else:
         return False
 
-# TODO la class cards doit avoir une methode par pouvoir et une methode attack, la class player appelle la class cards pour attacker
 # la fin du tour appelle les carte du board qui on des effets de fin de tour
 # use un event pour la fin de tour et utiliser des listener
 class Card:
     def __init__(self, possede:int, name:str, mana:int, strength:int, health:int, effects:dict, property:list=[]):
+        self.Belonging = None
         self.Name = name
         self.Mana = mana
         self.Strength = strength
         self.HealthMax = health
         self.DamageTaken = 0
-        self.Triggers = None # TOdo
         self.Effects = effects # on met un dico avec les evenement en clé et la fonction associée
         self.Ready = False
         self.Attackable = False
@@ -72,7 +74,6 @@ class Card:
         self.OnBoard = False
         self.InVoid = False
         self.Obliterated = False
-        self.Belonging = None
         self.Armor = 0 # Ne peut etre negative
         self.Confused = False
         self.Overkill = False
@@ -114,6 +115,7 @@ class Player:
         self.Board = []
         self.Turn = begin
         self.Tricks = begin + 3 * (1 - begin)
+        self.TrickUsed = False
         self.Attackable = False
         print("--------------------------------------------------------------------------------------")
         print(f'Instanciate Player{self.NumPlayer}, Health: {self.Health}, his Turn to play: {self.Turn}')
@@ -134,25 +136,36 @@ class Player:
             self.Hand[-1].Belonging = self
         print(f'Player{self.NumPlayer} drew {nbrCards} Cards, named: {[card.Name for card in self.Hand[-nbrCards:]]}')
     def LayCard(self, numCardInHand:int):
-        if self.Hand[numCardInHand].Mana <= self.ManaDispo: # TODO si le board est plein
-            self.Board.append(self.Hand.pop(numCardInHand))
-            self.Board[-1].InHand = False
-            self.Board[-1].OnBoard = True
-            self.Board[-1].Belonging = self
-            self.ManaDispo -= self.Board[-1].Mana
-            # On register les effect de la carte aux events quand on la pose
-            for event in listEvents:
-                if event in self.Board[-1].Effects:
-                    self.Pub.register(event, self.Board[-1])
-            if "OnLaying" in self.Board[-1].Effects:
-                self.Board[-1].Effects["OnLaying"](self.Board[-1])
-            print(f'Player{self.NumPlayer} lay a Card, named: {self.Board[-1].Name}, with {self.Board[-1].Mana} Mana')
+        if self.Hand[numCardInHand].Mana <= self.ManaDispo:
+            if len(self.Board) < 6:
+                self.Board.append(self.Hand.pop(numCardInHand))
+                self.Board[-1].InHand = False
+                self.Board[-1].OnBoard = True
+                self.Board[-1].Belonging = self
+                self.ManaDispo -= self.Board[-1].Mana
+                # On register les effect de la carte aux events quand on la pose
+                for event in listEvents:
+                    if event in self.Board[-1].Effects:
+                        self.Pub.register(event, self.Board[-1])
+                if "OnLaying" in self.Board[-1].Effects:
+                    self.Board[-1].Effects["OnLaying"](self.Board[-1])
+                print(f'Player{self.NumPlayer} lay a Card, named: {self.Board[-1].Name}, with {self.Board[-1].Mana} Mana')
+            else:
+                print("ERREUR - Le board est plein !")
         else:
             print(f"ERREUR - Vous n'avez que {self.ManaDispo} de Mana dispo, vous ne pouvez une carte de {self.Hand[numCardInHand].Mana} Mana")
-    def UseTricks(self):
-        if self.Tricks > 0:
+    def UseTricks(self, game):
+        if self.Tricks > 0 and self.TrickUsed == False:
             self.Tricks -= 1
-            self.ManaDispo += 1
+            if game.Turn >= 5 and game.Turn < 7:
+                self.ManaDispo += 1 / 2
+            elif game.Turn >= 7 and game.Turn < 8:
+                self.ManaDispo += 1 / 3
+            elif game.Turn >= 8:
+                self.ManaDispo += 1 / 4
+            else:
+                self.ManaDispo += 1
+            self.TrickUsed = True
             print(f'Player{self.NumPlayer} used a trick, he has now {self.ManaDispo} Mana')
         else:
             print('ERREUR - Plus de tricks')
@@ -204,8 +217,16 @@ class Game:
     def EndTurn(self, playerEnding, playerStarting):
         playerEnding.Turn = False
         playerStarting.Turn = True
+        playerStarting.TrickUsed = False
         self.Turn += 0.5
-        playerStarting.ManaDispo = int(self.Turn) + 1
+        if self.Turn >= 5 and self.Turn < 7:
+            playerStarting.ManaDispo = int(self.Turn) + 0.5
+        elif self.Turn >= 7 and self.Turn < 8:
+            playerStarting.ManaDispo = int(self.Turn) + 1 / 3
+        elif self.Turn >= 8:
+            playerStarting.ManaDispo = int(self.Turn) + 1 / 4
+        else:
+            playerStarting.ManaDispo = int(self.Turn) + 1
         for card in playerEnding.Board:
             card.Attackable = True
         for card in playerStarting.Board:
@@ -228,7 +249,6 @@ class Game:
 class Strategy:
     def __init__(self):
         pass
-
 
 
 
