@@ -7,11 +7,65 @@ import keyboard
 import random
 import numpy as np
 
+def functionManaDispo(Turn):
+    if int(Turn) == 5:
+        return 5.5
+    elif int(Turn) == 6:
+        return 6
+    elif int(Turn) == 7:
+        return 6.5
+    elif int(Turn) == 8:
+        return 7
+    elif int(Turn) == 9:
+        return 7 + 1 / 3
+    elif int(Turn) == 10:
+        return 7 + 2 / 3
+    elif int(Turn) == 11:
+        return 8
+    elif int(Turn) == 12:
+        return 8 + 1 / 4
+    elif int(Turn) == 13:
+        return 8 + 2 / 4
+    elif int(Turn) == 14:
+        return 8 + 3 / 4
+    elif int(Turn) == 15:
+        return 9
+    elif int(Turn) >= 16:
+        return 9
+    else:
+        return int(Turn) + 1
 
-listTriggers = ["OnDraw", "OnLaying", "OnCharacterAttack", "OnGodAttack", "OnCreatureAttack", "Onkill", "OnUse",
-                "OnDefense", "OnDying", "OnEnemyDamagedBySelf"]
-listEvents = ["OnTricksUse", "OnSpellUse", "OnStartTurn", "OnEndTurn", "OnPowerUse", "OnRelicUse", "OnFriendDefense", "OnFriendDamaged"
-              "OnFriendAttack", "OnFriendDies", "OnEnemyDied", "OnEnemyAttack"]
+def functionTrickUse(Mana):
+    if Mana == 5:
+        return 5.5
+    elif Mana == 5.5:
+        return 6
+    elif Mana == 6:
+        return 6.5
+    elif Mana == 6.5:
+        return 7
+    elif Mana == 7:
+        return 7 + 1 / 3
+    elif Mana == 7 + 1 / 3:
+        return 7 + 2 / 3
+    elif Mana == 7 + 2 / 3:
+        return 8
+    elif Mana == 8:
+        return 8 + 1 / 4
+    elif Mana == 8 + 1 / 4:
+        return 8 + 2 / 4
+    elif Mana == 8 + 2 / 4:
+        return 8 + 3 / 4
+    elif Mana == 8 + 3 / 4:
+        return 9
+    elif Mana >= 9:
+        return 9
+    else:
+        return Mana + 1
+
+
+listTriggers = ["OnDraw", "OnLaying", "OnCharacterAttack", "OnCreatureAttack", "Onkill", "OnUse", "OnDefense", "OnDying", "OnEnemyDamagedBySelf"]
+listEvents = ["OnTricksUse", "OnSpellUse", "OnStartTurn", "OnEndTurn", "OnPowerUse", "OnRelicUse", "OnFriendDefense", "OnFriendDamaged", "OnFriendAttack", "OnFriendDies", "OnEnemyDied", "OnEnemyAttack", "OnGodDamaged", "OnGodAttack"]
 
 class Publisher: # on créer un publisher par player
     def __init__(self, listEvents):
@@ -23,13 +77,18 @@ class Publisher: # on créer un publisher par player
         del self.dicoSubscribers[event][card]
         print(f"Unregistered card {card.Name} for the event {event}")
     def dispatch(self, event):
-        for card, function in self.dicoSubscribers[event].items():
-            function(card)
+        for card, listFunction in self.dicoSubscribers[event].items():
+            for function in listFunction:
+                function(card)
 
 def Death(player0, player1):
     for player in [player0, player1]:
         for numCard, card in enumerate(player.Board):
             if card.HealthMax <= card.DamageTaken:
+                if card.Name == "GOD":
+                    game.End(1-player.NumPlayer) # TODO régler le pblm de game en argument
+                    break
+                    break
                 print(f'La carte {card.Name} du joueur {player.NumPlayer} est détruite.')
                 card.OnBoard = False
                 if card.Obliterated:
@@ -42,14 +101,22 @@ def Death(player0, player1):
                         player.Pub.unregister(event, card)
                 player.Pub.dispatch("OnFriendDies")
                 if "Afterlife" in card.Property or "Frontline" in card.Property:
-                    card.Effects["OnDying"](card)
+                    for function in card.Effects["OnDying"]:
+                        function(card)
 
-def GetDamaged(cardDamaged, Amount):
+def GetDamaged(cardDamaged, playerAttacking, Amount):
     if Amount > cardDamaged.Armor:
         cardDamaged.DamageTaken += (Amount - cardDamaged.Armor)
         if "OnDamaged" in cardDamaged.Effects:
-            cardDamaged.Effects["OnDamaged"](cardDamaged)
-        cardDamaged.Belonging.Pub.dispatch("OnFriendDamaged")
+            for function in cardDamaged.Effects["OnDamaged"]:
+                function(cardDamaged)
+        if cardDamaged.Name == "GOD":
+            if cardDamaged.Belonging != playerAttacking:
+                playerAttacking.Frenzied = True
+            cardDamaged.Belonging.Pub.dispatch("OnGodDamaged")
+        else:
+            cardDamaged.Belonging.Pub.dispatch("OnFriendDamaged")
+        print(f'La carte {cardDamaged.Name} subit {Amount - cardDamaged.Armor}, et a mtn {cardDamaged.Health} de vie')
         return True
     else:
         return False
@@ -57,15 +124,18 @@ def GetDamaged(cardDamaged, Amount):
 # la fin du tour appelle les carte du board qui on des effets de fin de tour
 # use un event pour la fin de tour et utiliser des listener
 class Card:
-    def __init__(self, possede:int, name:str, mana:int, strength:int, health:int, effects:dict, property:list=[]):
+    def __init__(self, possede:int, name:str, mana:int, strength:int, health:int, effects:dict, creature=True, property:list=[], tribu=None, description=""):
         self.Belonging = None
+        self.Creature = creature
         self.Name = name
         self.Mana = mana
         self.Strength = strength
         self.HealthMax = health
+        self.Tribu = tribu
+        self.Description = description
         self.DamageTaken = 0
         self.Effects = effects # on met un dico avec les evenement en clé et la fonction associée
-        self.Ready = False
+        self.Ready = False # préciser dans les actions possible que le dieu ne peut attaquer
         self.Attackable = False
         self.Property = property
         self.Possede = possede
@@ -74,30 +144,39 @@ class Card:
         self.OnBoard = False
         self.InVoid = False
         self.Obliterated = False
+        self.CanAttackGod = True
         self.Armor = 0 # Ne peut etre negative
         self.Confused = False
         self.Overkill = False
-        print("--------------------------------------------------------------------------------------")
-        print(f'Instanciate Card, name: {self.Name}, Mana: {self.Mana}, Strength: {self.Strength}, Health: {self.HealthMax}')
-        print("--------------------------------------------------------------------------------------")
     @property
     def Health(self):
         return self.HealthMax - self.DamageTaken
     def ShowCard(self):
         position = "in Deck"*self.InDeck+"in Hand"*self.InHand+"on Board"*self.OnBoard+"in Void"*self.InVoid+"Obliterated"*self.Obliterated
         print(f'----> Carte {self.Name}, Mana: {self.Mana}, Strength: {self.Strength}, Health: {self.Health}, Property: {self.Property}, Position: {position}'+'\n----> Attackable !'*self.Attackable+'\n----> Ready to play !'*self.Ready)
-    def AttackCard(self, otherPlayer, numCardDefend:int):
-        if self.Ready:
-            print(f'La carte {self.Name} attaque la carte {otherPlayer.Board[numCardDefend].Name}')
-            if GetDamaged(otherPlayer.Board[numCardDefend], self.Strength):
-                if "OnEnemyDamagedBySelf" in self.Effects:
-                    self.Effects["OnEnemyDamagedBySelf"](self, otherPlayer.Board[numCardDefend])
-            if GetDamaged(self, otherPlayer.Board[numCardDefend].Strength):
-                if "OnEnemyDamagedBySelf" in otherPlayer.Board[numCardDefend].Effects:
-                    otherPlayer.Board[numCardDefend].Effects["OnEnemyDamagedBySelf"](otherPlayer.Board[numCardDefend], self)
-            self.Ready = False
+    def Attack(self, otherPlayer, numCardDefend:int):
+        if self.CanAttackGod or numCardDefend!=0:
+            if self.Ready and otherPlayer.Board[numCardDefend].Attackable and "Relic" not in self.Property:
+                print(f'La carte {self.Name} attaque la carte {otherPlayer.Board[numCardDefend].Name}')
+                if GetDamaged(otherPlayer.Board[numCardDefend], self.Belonging, self.Strength):
+                    if self.Name == "GOD":
+                        self.Belonging.Pub.dispatch("OnGodAttack")
+                    if "OnEnemyDamagedBySelf" in self.Effects:
+                        for function in self.Effects["OnEnemyDamagedBySelf"]:
+                            function(self, otherPlayer.Board[numCardDefend])
+                if GetDamaged(self, otherPlayer, otherPlayer.Board[numCardDefend].Strength):
+                    if otherPlayer.Board[numCardDefend].Name == "GOD":
+                        otherPlayer.Pub.dispatch("OnGodDamaged")
+                    if "OnEnemyDamagedBySelf" in otherPlayer.Board[numCardDefend].Effects:
+                        for function in otherPlayer.Board[numCardDefend].Effects["OnEnemyDamagedBySelf"]:
+                            function(otherPlayer.Board[numCardDefend], self)
+                self.Ready = False
+                Death(self.Belonging, otherPlayer)
+            else:
+                print("ERREUR - La carte n'est pas activée ou l'adversaire est inattaquable")
         else:
-            print("ERREUR - La carte n'est pas activée, attaque impossible")
+            print("ERREUR - ne peut pas attaquer le dieu")
+
 
 
 
@@ -107,86 +186,128 @@ class Player:
         self.NumPlayer = numPlayer
         self.Pub = publisher
         self.Power = 0
-        self.Health = 30
         self.ManaDispo = 1
         self.Deck = deck
         self.Void = []
         self.Hand = []
-        self.Board = []
+        self.Board = [Card(possede=1, name="GOD", mana=0, strength=0, health=30, effects={}, creature=False)]
+        self.Board[0].Belonging = self
+        self.Board[0].Attackable = True
         self.Turn = begin
         self.Tricks = begin + 3 * (1 - begin)
         self.TrickUsed = False
-        self.Attackable = False
+        self.Frenzied = False
+        self.Relic = None
         print("--------------------------------------------------------------------------------------")
-        print(f'Instanciate Player{self.NumPlayer}, Health: {self.Health}, his Turn to play: {self.Turn}')
+        print(f'Instanciate Player{self.NumPlayer}')
         print("--------------------------------------------------------------------------------------")
     def ShowPlayer(self):
-        print(f'----> Player{self.NumPlayer}, Power: {self.Power}, Health: {self.Health}, Mana Dispo: {self.ManaDispo}, Hand: {[card.Name for card in self.Hand]}, Board: {[card.Name for card in self.Board]}, Tricks: {self.Tricks}')
-        print(f'-----------------------------------------------------> Mana: {[card.Mana for card in self.Hand]} ----------------------------------- Mana: {[card.Mana for card in self.Board]}')
-        print(f'-------------------------------------------------> Strength: {[card.Strength for card in self.Hand]} ------------------------------- Strength: {[card.Strength for card in self.Board]}')
-        print(f'---------------------------------------------------> Health: {[card.Health for card in self.Hand]} --------------------------------- Health: {[card.Health for card in self.Board]}')
+        print(f'----> Player{self.NumPlayer}, Power: {self.Power}, Health: {self.Board[0].Health}, Mana Dispo: {self.ManaDispo}, Hand: {[card.Name for card in self.Hand]}, Board: {[card.Name for i, card in enumerate(self.Board) if i!=0]}, Tricks: {self.Tricks}')
+        print(f'-----------------------------------------------------> Mana: {[card.Mana for card in self.Hand]} ----------------------------------- Mana: {[card.Mana for i, card in enumerate(self.Board) if i!=0]}')
+        print(f'-------------------------------------------------> Strength: {[card.Strength if "Spell" not in card.Property else "" for card in self.Hand]} ------------------------------- Strength: {[card.Strength if "Spell" not in card.Property else "" for i, card in enumerate(self.Board) if i!=0]}')
+        print(f'---------------------------------------------------> Health: {[card.Health if "Spell" not in card.Property else "" for card in self.Hand]} --------------------------------- Health: {[card.Health if "Spell" not in card.Property else "" for i, card in enumerate(self.Board) if i!=0]}')
         print(f'----> His Turn to play !'*self.Turn)
     def EndTurn(self, otherPlayer, game):
         game.EndTurn(playerEnding = self, playerStarting = otherPlayer)
     def Draw(self, nbrCards):
+        nbrCardsDraw = 0
         for i in range(nbrCards):
-            self.Hand.append(self.Deck.pop(0))
-            self.Hand[-1].InHand = True
-            self.Hand[-1].InDeck = False
-            self.Hand[-1].Belonging = self
-        print(f'Player{self.NumPlayer} drew {nbrCards} Cards, named: {[card.Name for card in self.Hand[-nbrCards:]]}')
-    def LayCard(self, numCardInHand:int):
-        if self.Hand[numCardInHand].Mana <= self.ManaDispo:
-            if len(self.Board) < 6:
-                self.Board.append(self.Hand.pop(numCardInHand))
-                self.Board[-1].InHand = False
-                self.Board[-1].OnBoard = True
-                self.Board[-1].Belonging = self
-                self.ManaDispo -= self.Board[-1].Mana
-                # On register les effect de la carte aux events quand on la pose
-                for event in listEvents:
-                    if event in self.Board[-1].Effects:
-                        self.Pub.register(event, self.Board[-1])
-                if "OnLaying" in self.Board[-1].Effects:
-                    self.Board[-1].Effects["OnLaying"](self.Board[-1])
-                print(f'Player{self.NumPlayer} lay a Card, named: {self.Board[-1].Name}, with {self.Board[-1].Mana} Mana')
+            if len(self.Deck) != 0:
+                self.Hand.append(self.Deck.pop(0))
+                self.Hand[-1].InHand = True
+                self.Hand[-1].InDeck = False
+                self.Hand[-1].Belonging = self
+                nbrCardsDraw += 1
             else:
-                print("ERREUR - Le board est plein !")
+                print("Plus de cartes a tirer")
+        print(f'Player{self.NumPlayer} drew {nbrCardsDraw} Cards, named: {[card.Name for card in self.Hand[-nbrCardsDraw:]]}')
+    def UseAbility(self, numCardOnBoard:int=None, relic=False):
+        if relic and self.Relic!=None:
+            if "OnUse" in self.Relic.Effects and self.Relic.Ready:
+                for function in self.Relic.Effects["OnUse"]:
+                    function(self.Relic)
+                if self.Relic != None:
+                    self.Relic.Ready = False
+            else:
+                print("ERREUR - Impossible d'utiliser la relic")
+        elif numCardOnBoard>=0 and numCardOnBoard<len(self.Board):
+                if "OnUse" in self.Board[numCardOnBoard].Effects and "Ability" in self.Board[numCardOnBoard].Property and self.Board[numCardOnBoard].Ready:
+                    for function in self.Board[numCardOnBoard].Effects["OnUse"]:
+                        function(self.Board[numCardOnBoard])
+                    self.Board[numCardOnBoard].Ready = False # TODO ajuster le cas où l'ability autodétruit la carte , elle ne peut plus etre mis a ready false
+                else:
+                    print("ERREUR - Aucune Ability")
         else:
-            print(f"ERREUR - Vous n'avez que {self.ManaDispo} de Mana dispo, vous ne pouvez une carte de {self.Hand[numCardInHand].Mana} Mana")
-    def UseTricks(self, game):
+            print("ERREUR - Aucune carte")
+    def LayCard(self, numCardInHand:int):
+        if numCardInHand >= 0 and numCardInHand < len(self.Hand):
+            if self.Hand[numCardInHand].Mana <= self.ManaDispo:
+                if "Relic" in self.Hand[numCardInHand].Property:
+                    if self.Relic != None:
+                        self.Void.append(self.Relic)
+                        print(f"La relic {self.Relic.Name} est détruite")
+                    self.Hand[numCardInHand].InHand = False
+                    self.Hand[numCardInHand].Belonging = self
+                    self.ManaDispo -= self.Hand[numCardInHand].Mana
+                    self.Relic = self.Hand[numCardInHand]
+                    print(f'Player{self.NumPlayer} play a Relic, named: {self.Hand[numCardInHand].Name}, with {self.Hand[numCardInHand].Mana} Mana')
+                    if "OnLaying" in self.Relic.Effects:
+                        for function in self.Relic.Effects["OnLaying"]:
+                            function(self.Relic)
+                    self.Hand.pop(numCardInHand)
+                elif "Spell" in self.Hand[numCardInHand].Property:
+                    self.Void.append(self.Hand.pop(numCardInHand))
+                    self.Void[-1].InHand = False
+                    self.Void[-1].InVoid = True
+                    self.Void[-1].Belonging = self
+                    self.ManaDispo -= self.Void[-1].Mana
+                    if "OnLaying" in self.Void[-1].Effects:
+                        for function in self.Void[-1].Effects["OnLaying"]:
+                            function(self.Void[-1])
+                    print(f'Player{self.NumPlayer} play a Spell, named: {self.Void[-1].Name}, with {self.Void[-1].Mana} Mana')
+                elif len(self.Board) <= 6:
+                    self.Board.append(self.Hand.pop(numCardInHand))
+                    self.Board[-1].InHand = False
+                    self.Board[-1].OnBoard = True
+                    self.Board[-1].Belonging = self
+                    self.ManaDispo -= self.Board[-1].Mana
+                    # On register les effect de la carte aux events quand on la pose
+                    if "OnLaying" in self.Board[-1].Effects:
+                        for function in self.Board[-1].Effects["OnLaying"]:
+                            function(self.Board[-1])
+                    for event in listEvents: # TODO des effets s'active dans ta mains, ajouter leur activation au tirage
+                        if event in self.Board[-1].Effects:
+                            self.Pub.register(event, self.Board[-1])
+                    print(f'Player{self.NumPlayer} lay a Card, named: {self.Board[-1].Name}, with {self.Board[-1].Mana} Mana')
+                else:
+                    print("ERREUR - Le board est plein !")
+            else:
+                print(f"ERREUR - Vous n'avez que {self.ManaDispo} de Mana dispo, vous ne pouvez une carte de {self.Hand[numCardInHand].Mana} Mana")
+        else:
+            print("ERREUR - Aucune carte a cette position")
+    def UseTricks(self):
         if self.Tricks > 0 and self.TrickUsed == False:
             self.Tricks -= 1
-            if game.Turn >= 5 and game.Turn < 7:
-                self.ManaDispo += 1 / 2
-            elif game.Turn >= 7 and game.Turn < 8:
-                self.ManaDispo += 1 / 3
-            elif game.Turn >= 8:
-                self.ManaDispo += 1 / 4
-            else:
-                self.ManaDispo += 1
+            self.ManaDispo = functionTrickUse(self.ManaDispo)
             self.TrickUsed = True
             print(f'Player{self.NumPlayer} used a trick, he has now {self.ManaDispo} Mana')
         else:
-            print('ERREUR - Plus de tricks')
-    def AttackCard(self, otherPlayer, numCardAttack:int, numCardDefend:int): # TODO gerer l'attack god dans confused et overkill
-        if self.Board[numCardAttack].Confused:
-            if len([numCard for numCard in range(len(otherPlayer.Board)) if (numCard != numCardDefend and otherPlayer.Board[numCard].Attackable)]) != 0:
-                numCardDefend = random.choice([numCardDefend, random.choice([numCard for numCard in range(len(otherPlayer.Board)) if (numCard != numCardDefend and otherPlayer.Board[numCard].Attackable)])])
-        if self.Board[numCardAttack].Overkill:
-            surplus = self.Board[numCardAttack].Strengh - (otherPlayer.Board[numCardDefend].Health + otherPlayer.Board[numCardDefend].Armor)
-            if surplus > 0:
-                for damage in range(surplus):
-                    pass
-        if otherPlayer.Board[numCardDefend].Attackable:
-            self.Board[numCardAttack].AttackCard(otherPlayer, numCardDefend)
+            print('ERREUR - Plus de tricks, ou déjà utilisé')
+    def AttackWithCard(self, otherPlayer, numCardAttack:int, numCardDefend:int):
+        if numCardAttack >=0 and numCardAttack < len(self.Board):
+            if "Ability" not in self.Board[numCardAttack].Property:
+                # Confused
+                if self.Board[numCardAttack].Confused:
+                    if len([numCard for numCard in range(len(otherPlayer.Board)) if numCardDefend != numCard and otherPlayer.Board[numCard].Attackable]) != 0:
+                        numCardDefend = random.choice([numCardDefend, random.choice([numCard for numCard in range(len(otherPlayer.Board)) if numCardDefend != numCard and otherPlayer.Board[numCard].Attackable])])
+
+                self.Board[numCardAttack].Attack(otherPlayer, numCardDefend)
+                Death(self, otherPlayer)
+            else:
+                print("ERREUR - Les cartes avec Ability ne peuvent attaquer")
         else:
-            print("ERREUR - La carte de l'adversaire est non attackable")
-        Death(self, otherPlayer)
-    def AttackGod(self, otherPlayer, numCardAttack:int): # TODO gerer l'attack d'un god ---------------
-        otherPlayer.Health -= self.Board[numCardAttack].Strength
-        self.Board[numCardAttack].Ready = False
-        print(f'La carte {self.Board[numCardAttack].Name} attaque le dieu du joueur {1 - self.NumPlayer}')
+            print(f'ERREUR - Ancune carte pour attaquer')
+
 
 class Game:
     def __init__(self):
@@ -219,23 +340,19 @@ class Game:
         playerStarting.Turn = True
         playerStarting.TrickUsed = False
         self.Turn += 0.5
-        if self.Turn >= 5 and self.Turn < 7:
-            playerStarting.ManaDispo = int(self.Turn) + 0.5
-        elif self.Turn >= 7 and self.Turn < 8:
-            playerStarting.ManaDispo = int(self.Turn) + 1 / 3
-        elif self.Turn >= 8:
-            playerStarting.ManaDispo = int(self.Turn) + 1 / 4
-        else:
-            playerStarting.ManaDispo = int(self.Turn) + 1
+        playerStarting.ManaDispo = functionManaDispo(self.Turn)
         for card in playerEnding.Board:
             card.Attackable = True
-        for card in playerStarting.Board:
+        for card in playerStarting.Board[1:]:
             card.Ready = True
+            card.CanAttackGod = True
+        if playerStarting.Relic != None:
+            playerStarting.Relic.Ready = True
+        playerStarting.Frenzied = False
         playerEnding.Pub.dispatch("OnEndTurn")
         playerStarting.Pub.dispatch("OnStartTurn")
         print(f'Player{playerEnding.NumPlayer} ended turn, GameTurn: {self.Turn}')
         playerStarting.Draw(nbrCards=1)
-        # TODO régler l'augmentation progressive de la mana apres le tour 5 et impact sur tricks
         playerStarting.ShowPlayer()
     def End(self, winner:int):
         self.NumGame += 1
@@ -245,6 +362,8 @@ class Game:
         self.Running = False
         self.StartTime = None
         self.Turn = 0
+        print(f"Le joueur {winner} gagne !!")
+        # TODO réinitialiser le jeux
 
 class Strategy:
     def __init__(self):
@@ -262,7 +381,7 @@ class Strategy:
 
 
 
-
+# TODO est ce que quand on remplace une relic ses effets (afterlife) s'appliquent ??
 
 
 
