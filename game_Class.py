@@ -77,14 +77,21 @@ class Publisher: # on créer un publisher par player
         del self.dicoSubscribers[event][card]
         print(f"Unregistered card {card.Name} for the event {event}")
     def dispatch(self, event):
+        dicoAlreadyDispatched = {}
         for card, listFunction in self.dicoSubscribers[event].items():
             for function in listFunction:
-                function(card)
+                
+                function(card)  # TODO atention si les fonctions modifie le dico pendant que la boucle for tourne
+
+
+
 
 def Death(player0, player1):
+    listDead = []
     for player in [player0, player1]:
         for numCard, card in enumerate(player.Board):
             if card.HealthMax <= card.DamageTaken:
+                listDead.append(card)
                 if card.Name == "GOD":
                     game.End(1-player.NumPlayer) # TODO régler le pblm de game en argument
                     break
@@ -99,10 +106,13 @@ def Death(player0, player1):
                 for event in card.Effects:
                     if event in listEvents: # Les effet peuvent etre des triggers et non des event
                         player.Pub.unregister(event, card)
-                player.Pub.dispatch("OnFriendDies")
-                if "Afterlife" in card.Property or "Frontline" in card.Property:
-                    for function in card.Effects["OnDying"]:
-                        function(card)
+    # On sépare les boucles for pour activer les afterlife après la destruction des cartes
+    for numCard, card in enumerate(listDead):
+        if "Afterlife" in card.Property or "Frontline" in card.Property:
+            for function in card.Effects["OnDying"]:
+                print(f"Apply function of {card.Name}")
+                function(card)
+        card.Belonging.Pub.dispatch("OnFriendDies")
 
 def GetDamaged(cardDamaged, playerAttacking, Amount):
     if Amount > cardDamaged.Armor:
