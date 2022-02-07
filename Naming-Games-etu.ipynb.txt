@@ -1,0 +1,802 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Naming games\n",
+    "\n",
+    "ARE DYNAMIC 2021-2022 -- \n",
+    "*Aurélie Beynier, Maël Franceschetti, Nathanaël Gross-Humbert, Nicolas Maudet, Léane Salais, Parham Shams*"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "La manière dont les conventions langagières émergent dans une population est une question difficile. \n",
+    "Le modèle des **jeux de nommage** (naming games) permet une analyse de telles dynamiques. \n",
+    "Dans ce notebook, nous allons en étudier une version simple, basée sur des mises à jour successives entre paires d'agents. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Références\n",
+    "Sharp transition towards shared vocabularies in\n",
+    "multi-agent systems. \n",
+    "https://arxiv.org/pdf/physics/0509075.pdf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Nous aurons besoin de modules standards permettant d'utiliser des fonctions de tirage aléatoire (`random`)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import random\n",
+    "import numpy as np"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Un système est un ensemble d'agents. Chaque agent maintient un **inventaire** de mots. Nous allons définir un ensemble de fonctions simples permettant de gérer ces inventaires de mots. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Gestion de l'inventaire"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Chaque agent dispose donc de son propre inventaire. L'inventaire est une liste de mots. Le système sera donc simplement représenté ici par une liste de liste. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrivez une fonction permettant de créer un système initialement vide de *n* agents. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def create_system(n):\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[], [], [], [], []]\n"
+     ]
+    }
+   ],
+   "source": [
+    "s0 = create_system(5)\n",
+    "print(s0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "s0[0]=['blabla','titi'] \n",
+    "s0[2]=['blabla','toto']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction permettant de retourner l'inventaire de l'agent i"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def get_agent(i,s):\n",
+    "    \"\"\"retourne l'inventaire correspondant à l'agent i dans le système s\"\"\"\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction retournant le booléen True si l'inventaire de l'agent i est vide, et False sinon"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def is_empty(i,s):\n",
+    "    \"\"\"indique si l'inventaire de l'agent i est vide\"\"\"\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction permettant de retourner un nom choisi au hasard parmi ceux de l'agent i, que l'on suppose ici non vide. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def pick_name(i,s):\n",
+    "    \"\"\"retourne un nom au hasard de l'inventaire de l'agent i\"\"\"\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'blabla'"
+      ]
+     },
+     "execution_count": 26,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "pick_name(0,s0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction retournant le booléen True si le nom w est présent dans l'inventaire de l'agent i."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def knows_name(i,w,s):\n",
+    "    \"\"\"indique si le nom w est dans l'inventaire de l'agent i\"\"\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "True\n",
+      "False\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(knows_name(0,'titi',s0))\n",
+    "print(knows_name(2,'titi',s0))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On dit que le système est arrivé à un état de **consensus** lorsque tous les agents du système n'ont plus qu'un seul et même mot dans leur inventaire. \n",
+    "Ecrire une fonction prenant en paramètre un système et retournant True si il est en état de consensus. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def consensus(s):\n",
+    "    \"\"\"indique si le système est en état de consensus\"\"\"\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "False\n",
+      "False\n",
+      "True\n"
+     ]
+    }
+   ],
+   "source": [
+    "s1 = [[],[]]\n",
+    "s2 = [['nmlsyr'], ['nmlsyr'], ['nmlsyr', 'fahtga'], ['fahtga'], []]\n",
+    "s3 = [['nmlsyr'], ['nmlsyr'], ['nmlsyr'], ['nmlsyr'], ['nmlsyr']]\n",
+    "print(consensus(s1))\n",
+    "print(consensus(s2))\n",
+    "print(consensus(s3))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Dynamique"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "La dynamique est la suivante. Les agents se rencontrent deux à deux, au hasard. Lors d'une rencontre, on distingue l'**initiateur** du **récepteur**. \n",
+    "\n",
+    "Lors de chaque rencontre, une mise à jour est effectuée, selon la procédure suivante:  \n",
+    "1. l'initiateur choisit un mot de son inventaire au hsard, ou en créé un si son inventaire est vide; \n",
+    "2. le récepteur vérifie si le mot transmis est déjà dans son inventaire: si c'est le cas, les deux agents ne conservent que ce mot (et effacent donc tous les autres mots) et on dit que l'interaction est un **succès**; sinon c'est un **échec** et le récepteur ajoute ce mot à son inventaire"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction permettant de retourner un nom d'une taille créé au hasard.  "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def create_name(t):\n",
+    "    \"\"\"cree un nom aleatoire de taille t\"\"\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "cnmuo\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(create_name(5))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Vous avez à présent tous les éléments pour écrire la fonction `meeting` permettant de réaliser la mise à jour des inventaires selon la méthode décrite, et renvoyant un booléen indiquant si l'interaction est un succès ou pas. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def meeting(i,j,s):\n",
+    "    \"\"\"mise à jour du système après la rencontre entre i (initiateur) et j (récepteur)\n",
+    "    Parameters\n",
+    "    ----------\n",
+    "    i: int, initiateur\n",
+    "    j: int, initiateur\n",
+    "    s: list of list, system\n",
+    "    \"\"\"\n",
+    "   "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 43,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[['zhmdd'], ['zhmdd'], [], [], []]\n",
+      "[['zhmdd'], ['zhmdd'], ['zhmdd'], [], []]\n",
+      "[['zhmdd'], ['zhmdd'], ['zhmdd', 'kdtua'], ['kdtua'], []]\n",
+      "[['zhmdd'], ['zhmdd'], ['zhmdd'], ['kdtua'], []]\n"
+     ]
+    }
+   ],
+   "source": [
+    "s4 =create_system(5)\n",
+    "meeting(0,1,s4)\n",
+    "print(s4)\n",
+    "meeting(1,2,s4)\n",
+    "print(s4)\n",
+    "meeting(3,2,s4)\n",
+    "print(s4)\n",
+    "meeting(0,2,s4)\n",
+    "print(s4)\n",
+    "assert (not consensus(s4))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On souhaite à présent modéliser une dynamique simple de rencontres aléatoires entre agents, en tirant tout simplement au hasard une paire d'agents qui doivent se rencontrer, et en itérant pendant un nombre de tours donné en paramètre. La fonction ne prend que le nombre d'agents en paramètre, le système d'agents doit être créé dans la fonction. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 44,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def random_dynamics(n, steps=50, verbose=True):\n",
+    "    \"\"\"modélise une dynamique de recontres alétaoires et retourne si un consensus est atteint\n",
+    "    Parameters\n",
+    "    ----------\n",
+    "    n: int\n",
+    "    steps: int\n",
+    "    \"\"\"\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 45,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[], [], ['lcnpc'], [], ['lcnpc'], [], []]\n",
+      "[[], ['eohgd'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], []]\n",
+      "[['jfpee'], ['eohgd'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], ['jfpee']]\n",
+      "[['jfpee'], ['eohgd'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], ['jfpee']]\n",
+      "[['jfpee'], ['eohgd', 'jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], ['jfpee']]\n",
+      "[['jfpee'], ['eohgd', 'jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc'], [], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc', 'jfpee'], [], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc', 'jfpee'], ['eohgd'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc'], ['eohgd'], ['lcnpc', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd'], ['eohgd'], ['lcnpc', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd'], ['eohgd'], ['lcnpc', 'jfpee'], ['eohgd'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd'], ['eohgd'], ['lcnpc', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd'], ['eohgd', 'jfpee'], ['lcnpc', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['lcnpc', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['eohgd', 'jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['lcnpc', 'eohgd', 'jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['eohgd', 'jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n",
+      "[['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee'], ['jfpee']]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 45,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "random_dynamics(7)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Quelques questions autour de la convergence\n",
+    "Faites quelques tests, en faisant varier le nombre d'agents, et le nombre d'itérations. \n",
+    "* Le système peut-il sortir d'un état de convergence? \n",
+    "* Arrive-t-il que le mot obtenu lors d'un consensus n'ait pas été le premier créé? \n",
+    "* La convergence vous semble-t-elle garantie de manière générale?\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Afin de consolider les intuitions précédentes, on souhaite mener une expérimentation permettant de mettre en relation le nombre d'itérations avant convergence avec le nombre d'agents.  \n",
+    "Modifier la fonction précédente afin qu'elle s'arrête dès convergence et qu'elle retoune le nombre d'itérations qui ont été nécessaire, et 0 si la convergence n'est pas atteinte. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def random_dynamics_conv(n, steps=50, verbose=True):\n",
+    "    \"\"\"modélise une dynamique de recontres alétaoires et retourne si un consensus est atteint\n",
+    "    Parameters\n",
+    "    ----------\n",
+    "    n: int\n",
+    "    steps: int\n",
+    "    \"\"\"\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[], ['lwfoe'], [], [], [], ['lwfoe'], []]\n",
+      "[[], ['lwfoe'], ['kvsbh'], [], [], ['lwfoe', 'kvsbh'], []]\n",
+      "[[], ['lwfoe'], ['kvsbh'], ['hofob'], ['hofob'], ['lwfoe', 'kvsbh'], []]\n",
+      "[['lwfoe'], ['lwfoe'], ['kvsbh'], ['hofob'], ['hofob'], ['lwfoe', 'kvsbh'], []]\n",
+      "[['lwfoe'], ['lwfoe'], ['kvsbh'], ['hofob', 'neqsj'], ['hofob'], ['lwfoe', 'kvsbh'], ['neqsj']]\n",
+      "[['lwfoe'], ['lwfoe'], ['kvsbh'], ['hofob', 'neqsj', 'lwfoe'], ['hofob'], ['lwfoe', 'kvsbh'], ['neqsj']]\n",
+      "[['lwfoe'], ['lwfoe'], ['kvsbh'], ['hofob', 'neqsj', 'lwfoe'], ['hofob'], ['lwfoe', 'kvsbh', 'hofob'], ['neqsj']]\n",
+      "[['lwfoe'], ['lwfoe'], ['kvsbh'], ['hofob', 'neqsj', 'lwfoe'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe'], ['lwfoe', 'neqsj'], ['kvsbh'], ['hofob', 'neqsj', 'lwfoe'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe'], ['lwfoe', 'neqsj'], ['kvsbh'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'neqsj'], ['kvsbh'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe'], ['kvsbh'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe'], ['kvsbh', 'hofob'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe'], ['kvsbh', 'hofob'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'kvsbh'], ['kvsbh', 'hofob'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'kvsbh'], ['hofob'], ['neqsj'], ['hofob'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'kvsbh'], ['hofob'], ['neqsj'], ['hofob', 'kvsbh'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['hofob', 'kvsbh'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['lwfoe', 'kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['hofob', 'kvsbh'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'neqsj'], ['kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe'], ['kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe'], ['kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh'], ['kvsbh'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh'], ['kvsbh', 'lwfoe'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['hofob', 'neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['lwfoe', 'neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['kvsbh', 'lwfoe', 'neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe', 'neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe', 'neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['kvsbh', 'lwfoe', 'neqsj'], ['neqsj', 'lwfoe'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['lwfoe', 'kvsbh', 'neqsj'], ['neqsj'], ['neqsj', 'lwfoe'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['neqsj'], ['neqsj'], ['neqsj', 'lwfoe'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n",
+      "[['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj'], ['neqsj']]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "38"
+      ]
+     },
+     "execution_count": 60,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "random_dynamics_conv(7)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On souhaite faire varier le nombre d'agents de 5 à 15 et calculer à chaque fois le nombre d'itérations nécessaires à la convergence. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 73,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[13, 40, 38, 64, 29, 87, 153, 88, 186, 109]\n"
+     ]
+    }
+   ],
+   "source": [
+    "results=[random_dynamics_conv(n, steps=1000, verbose=False) for n in range(5,15)]\n",
+    "print(results)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Métriques"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Dans leur article, Baronchelli et al. étudient en particulier les métriques suivantes: \n",
+    "* Nombre total de mots dans le système\n",
+    "* Nombre de mots différents dans le système\n",
+    "* Taux d'interaction réussi\n",
+    "\n",
+    "On cherche à présent à écrire les fonctions qui vont permettre de reproduire ces analyses. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction renvoyant le nombre de mots total présents dans un système. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 77,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def nb_names(s):\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire une fonction renvoyant le nombre de mots différents dans un système (on ne compte qu'une occurence de chaque mot cette fois-ci). "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 78,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def nb_unique_names(s):\n",
+    "   "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 79,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "assert(nb_names(s2)==5)\n",
+    "assert(nb_unique_names(s2)==2)\n",
+    "assert(nb_names(s3)==5)\n",
+    "assert(nb_unique_names(s3)==1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Modifiez à présent la fonction `random_dynamic` de manière à enregistrer à dans une trois listes: le nombre de mots total, le nombre de mots uniques, et le taux d'interaction réussies **à chaque étape** de la dynamique. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 80,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def random_dynamics_stats(n, steps=10, verbose=True):\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[2, 4, 5, 7, 8, 9, 8, 9, 9, 8, 9, 10, 9, 8, 8, 9, 8, 8, 8, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7], [1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], [False, False, False, False, False, False, True, False, True, True, False, False, True, True, True, False, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "stats = random_dynamics_stats(7,50,False)\n",
+    "print(stats)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Représentation graphique"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On souhaite à présent obtenir les courbes représentant l'évolution de ces métriques au cours d'**une** simulation. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On commence par charger le module de matplotlib utile pour afficher ce type de graphes. \n",
+    "Nous renvoyons [ici](https://github.com/SergeStinckwich/ARE-UPMC/blob/master/ARE-DYNAMIC/fiche3.ipynb) et [ici](https://nbviewer.org/github/jrjohansson/scientific-python-lectures/blob/master/Lecture-4-Matplotlib.ipynb) pour deux notebooks d'introduction à matplotlib. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 345,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from matplotlib import pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Ecrire un script permettant d'obtenir les graphes représentant l'évolution des métriques du nombres de mots (total et différents) pendant l'éxécution d'une simulation. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Les figures obtenues correspondent donc à une simulation. Pour obtenir des résultats significatifs, on va reproduire les simulations plusieurs fois et reporter les moyennes obtenues sur l'ensemble des simulations. \n",
+    "Ecrire une fonction `simulations` permettant de lancer plusieurs simulations et de renvoyer les résultats moyennés sur l'ensemble des simulations, par étape, du nombre de mots, nombre de mots différents, et taux de succès. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 347,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def simulations(n,steps,nb_xps):\n",
+    "    \"\"\"\n",
+    "    Parameters\n",
+    "    ----------\n",
+    "    n: int, nbre d'agents\n",
+    "    steps: int, nbre de pas de chaque simulation\n",
+    "    nb_xps: int, nbre de simulations\n",
+    "    \"\"\"\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Variantes"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "On se propose à présent d'explorer certaines variantes ou extensions de ce modèle: \n",
+    "* **Autres métriques**: par exemple le moment d'apparition du mot consensuel, ou la distribution de la taille des inventaires\n",
+    "* **Variantes de mise à jour**: speaker-only et hearer-only, à comparer avec la version de base (qui met à jour les inventaires des deux interlocuteurs), ou encore mise à jour probabiliste\n",
+    "* **Capacité limité des agents**: par exemple inventaire (mémoire) de taille limitée, ou probabilité d'oubli de certains mots\n",
+    "* **Topologies**: dans le modèle tel que défini on suppose que tous les agents peuvent communiquer avec tous les autres agents. Dans ce cas, plusieurs dynamiques pour le choix des agents: choisir le speaker au hsard, puis au hasard parmi les voisins; etc. \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.4"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
